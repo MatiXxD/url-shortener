@@ -11,9 +11,9 @@ type MapRepository struct {
 	db map[string]*models.URL
 }
 
-func NewMapRepository() *MapRepository {
+func NewMapRepository(d map[string]*models.URL) *MapRepository {
 	return &MapRepository{
-		db: map[string]*models.URL{},
+		db: d,
 	}
 }
 
