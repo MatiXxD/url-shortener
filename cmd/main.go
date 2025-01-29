@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/MatiXxD/url-shortener/internal/handlers"
 	"github.com/MatiXxD/url-shortener/internal/server"
-	"github.com/MatiXxD/url-shortener/internal/transport/handlers"
 )
 
 func main() {

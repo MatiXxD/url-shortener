@@ -5,21 +5,31 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/MatiXxD/url-shortener/internal/repository"
+	"github.com/MatiXxD/url-shortener/internal/usecase"
 )
 
-func Router(w http.ResponseWriter, r *http.Request) {
+type UrlHandler struct {
+	urlUsecase *usecase.UrlUsecase
+}
+
+func NewUrlHandler(uu *usecase.UrlUsecase) *UrlHandler {
+	return &UrlHandler{
+		urlUsecase: uu,
+	}
+}
+
+func (uh *UrlHandler) Router(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		ReduceURL(w, r)
+		uh.ReduceURL(w, r)
 	case http.MethodGet:
-		GetURL(w, r)
+		uh.GetURL(w, r)
 	default:
 		http.Error(w, "Wrong request", http.StatusBadRequest)
 	}
 }
 
-func ReduceURL(w http.ResponseWriter, r *http.Request) {
+func (uh *UrlHandler) ReduceURL(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 	if !strings.Contains(contentType, "text/plain") {
 		http.Error(w, "Wrong content type", http.StatusUnsupportedMediaType)
@@ -33,7 +43,7 @@ func ReduceURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL, err := repository.ReduceURL(string(url))
+	shortURL, err := uh.urlUsecase.ReduceURL(string(url))
 	if err != nil {
 		http.Error(w, "Can't create short url", http.StatusInternalServerError)
 		return
@@ -44,9 +54,9 @@ func ReduceURL(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("http://localhost:8080/" + shortURL))
 }
 
-func GetURL(w http.ResponseWriter, r *http.Request) {
+func (uh *UrlHandler) GetURL(w http.ResponseWriter, r *http.Request) {
 	shortURL := r.URL.String()[1:]
-	url, ok := repository.GetURL(shortURL)
+	url, ok := uh.urlUsecase.GetURL(shortURL)
 	if !ok {
 		http.Error(w, "Can't find url", http.StatusBadRequest)
 		return
