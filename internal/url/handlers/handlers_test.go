@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
-	"github.com/MatiXxD/url-shortener/internal/repository"
-	"github.com/MatiXxD/url-shortener/internal/usecase"
+	"github.com/MatiXxD/url-shortener/internal/url/repository"
+	"github.com/MatiXxD/url-shortener/internal/url/usecase"
 	"github.com/stretchr/testify/require"
 )
 

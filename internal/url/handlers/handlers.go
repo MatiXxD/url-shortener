@@ -5,16 +5,16 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/MatiXxD/url-shortener/internal/usecase"
+	"github.com/MatiXxD/url-shortener/internal/url"
 )
 
 type UrlHandler struct {
-	urlUsecase *usecase.UrlUsecase
+	urlUsecase url.Usecase
 }
 
-func NewUrlHandler(uu *usecase.UrlUsecase) *UrlHandler {
+func NewUrlHandler(u url.Usecase) *UrlHandler {
 	return &UrlHandler{
-		urlUsecase: uu,
+		urlUsecase: u,
 	}
 }
 

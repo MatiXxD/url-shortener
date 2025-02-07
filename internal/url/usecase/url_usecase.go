@@ -3,14 +3,14 @@ package usecase
 import (
 	"fmt"
 
-	"github.com/MatiXxD/url-shortener/internal/repository"
+	"github.com/MatiXxD/url-shortener/internal/url"
 )
 
 type UrlUsecase struct {
-	repo *repository.MapRepository
+	repo url.Repository
 }
 
-func NewUrlUsecase(r *repository.MapRepository) *UrlUsecase {
+func NewUrlUsecase(r url.Repository) url.Usecase {
 	return &UrlUsecase{
 		repo: r,
 	}

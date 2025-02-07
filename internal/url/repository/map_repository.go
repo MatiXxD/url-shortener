@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/MatiXxD/url-shortener/internal/models"
+	"github.com/MatiXxD/url-shortener/internal/url"
 	"github.com/MatiXxD/url-shortener/pkg/tokengen"
 )
 
@@ -11,7 +12,7 @@ type MapRepository struct {
 	db map[string]*models.URL
 }
 
-func NewMapRepository(d map[string]*models.URL) *MapRepository {
+func NewMapRepository(d map[string]*models.URL) url.Repository {
 	return &MapRepository{
 		db: d,
 	}
