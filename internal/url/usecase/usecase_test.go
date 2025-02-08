@@ -1,54 +1,54 @@
-package repository
+package usecase
 
 import (
 	"testing"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
+	"github.com/MatiXxD/url-shortener/internal/url/repository"
 	"github.com/stretchr/testify/require"
 )
 
-func TestMapRepository_AddURL(t *testing.T) {
-	testURL := "https://www.google.com"
+func TestUsecase_ReduceURL(t *testing.T) {
+	testURL := "https://www.ya.ru"
 	testShortURL := "AAAAA"
 	d := map[string]*models.URL{
 		testURL: models.NewURL(testURL, testShortURL),
 	}
-	repo := NewMapRepository(d)
+	r := repository.NewMapRepository(d)
+	uc := NewUrlUsecase(r)
 
 	t.Run("Success add", func(t *testing.T) {
-		url := "https://ya.ru"
-		shortURL := "BBBBB"
-		got, err := repo.AddURL(url, shortURL)
+		url := "https://www.google.com"
+		shortURL, err := uc.ReduceURL(url)
 		require.NoError(t, err)
-		require.Equal(t, shortURL, got)
+		require.NotZero(t, shortURL)
 	})
 
 	t.Run("Alredy exists", func(t *testing.T) {
-		shortURL := "CCCCC"
-		got, err := repo.AddURL(testURL, shortURL)
+		shortURL, err := uc.ReduceURL(testURL)
 		require.NoError(t, err)
-		require.Equal(t, testShortURL, got)
+		require.Equal(t, testShortURL, shortURL)
 	})
 }
 
-func TestMapRepository_GetURL(t *testing.T) {
+func TestUsecase_GetURL(t *testing.T) {
 	testURL := "https://www.google.com"
 	testShortURL := "AAAAA"
 	d := map[string]*models.URL{
 		testURL: models.NewURL(testURL, testShortURL),
 	}
-	repo := NewMapRepository(d)
+	r := repository.NewMapRepository(d)
+	uc := NewUrlUsecase(r)
 
 	t.Run("Success get", func(t *testing.T) {
-		getURL, ok := repo.GetURL(testShortURL)
+		got, ok := uc.GetURL(testShortURL)
 		require.Equal(t, true, ok)
-		require.Equal(t, testURL, getURL)
+		require.Equal(t, testURL, got)
 	})
 
 	t.Run("Can't get url", func(t *testing.T) {
-		shortURL := "https://www.random.com"
-		getURL, ok := repo.GetURL(shortURL)
+		got, ok := uc.GetURL("https://random.com")
 		require.Equal(t, false, ok)
-		require.Zero(t, getURL)
+		require.Zero(t, got)
 	})
 }

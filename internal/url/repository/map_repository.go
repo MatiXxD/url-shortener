@@ -3,10 +3,7 @@ package repository
 import (
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/MatiXxD/url-shortener/internal/url"
-	"github.com/MatiXxD/url-shortener/pkg/tokengen"
 )
-
-const token_size = 10
 
 type MapRepository struct {
 	db map[string]*models.URL
@@ -18,14 +15,12 @@ func NewMapRepository(d map[string]*models.URL) url.Repository {
 	}
 }
 
-func (mr *MapRepository) ReduceURL(url string) (string, error) {
-	if url, ok := mr.db[url]; ok {
-		return url.ShortURL, nil
+func (mr *MapRepository) AddURL(url, shortURL string) (string, error) {
+	if got, ok := mr.db[url]; ok {
+		return got.ShortURL, nil
 	}
 
-	shortURL := tokengen.GenerateToken(token_size)
 	mr.db[url] = models.NewURL(url, shortURL)
-
 	return shortURL, nil
 }
 
