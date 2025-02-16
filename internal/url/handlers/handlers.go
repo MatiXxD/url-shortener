@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/MatiXxD/url-shortener/internal/url"
+	"github.com/go-chi/chi/v5"
 )
 
 type UrlHandler struct {
@@ -15,17 +16,6 @@ type UrlHandler struct {
 func NewUrlHandler(u url.Usecase) *UrlHandler {
 	return &UrlHandler{
 		urlUsecase: u,
-	}
-}
-
-func (uh *UrlHandler) Router(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		uh.ReduceURL(w, r)
-	case http.MethodGet:
-		uh.GetURL(w, r)
-	default:
-		http.Error(w, "Wrong request", http.StatusBadRequest)
 	}
 }
 
@@ -55,7 +45,7 @@ func (uh *UrlHandler) ReduceURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh *UrlHandler) GetURL(w http.ResponseWriter, r *http.Request) {
-	shortURL := r.URL.String()[1:]
+	shortURL := chi.URLParam(r, "url")
 	url, ok := uh.urlUsecase.GetURL(shortURL)
 	if !ok {
 		http.Error(w, "Can't find url", http.StatusBadRequest)

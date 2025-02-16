@@ -2,14 +2,12 @@ package handlers
 
 import (
 	"bytes"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/MatiXxD/url-shortener/internal/url/repository"
-	"github.com/MatiXxD/url-shortener/internal/url/usecase"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,24 +16,27 @@ func TestUrlHandler_ReduceURL(t *testing.T) {
 		"/url": {BaseURL: "/url", ShortURL: "AAAAAAAA"},
 	}
 	r := repository.NewMapRepository(d)
-	u := usecase.NewUrlUsecase(r)
-	h := NewUrlHandler(u)
+	mux, err := runTestServer(r)
+	require.NoError(t, err)
+
+	ts := httptest.NewServer(mux)
 
 	type want struct {
 		code        int
 		contentType string
 		response    string
 	}
+
 	tests := []struct {
 		name        string
-		body        string
+		body        []byte
 		contentType string
 		isError     bool
 		want        want
 	}{
 		{
 			name:        "Basic test",
-			body:        "/url",
+			body:        []byte("/url"),
 			contentType: "text/plain",
 			isError:     false,
 			want: want{
@@ -46,7 +47,7 @@ func TestUrlHandler_ReduceURL(t *testing.T) {
 		},
 		{
 			name:        "Wrong media type",
-			body:        "/",
+			body:        []byte("/"),
 			contentType: "application/json",
 			isError:     true,
 			want: want{
@@ -59,21 +60,17 @@ func TestUrlHandler_ReduceURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodPost, "/", bytes.NewBuffer([]byte(tt.body)))
-			r.Header.Add("Content-Type", tt.contentType)
-			w := httptest.NewRecorder()
-			h.ReduceURL(w, r)
-
-			res := w.Result()
-			require.Equal(t, tt.want.code, res.StatusCode)
-
+			hdrs := []http.Header{
+				{
+					"Content-Type": []string{tt.contentType},
+				},
+			}
+			resp, respBody := createTestRequest(t, ts, http.MethodPost, "/", hdrs, bytes.NewBuffer(tt.body))
+			require.Equal(t, tt.want.code, resp.StatusCode)
 			if !tt.isError {
-				defer res.Body.Close()
-				resBody, err := io.ReadAll(res.Body)
-
 				require.NoError(t, err)
-				require.Equal(t, tt.want.response, string(resBody))
-				require.Equal(t, tt.want.contentType, res.Header.Get("Content-Type"))
+				require.Equal(t, tt.want.response, respBody)
+				require.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"))
 			}
 		})
 	}
@@ -84,8 +81,10 @@ func TestUrlHandler_GetURL(t *testing.T) {
 		"/url": {BaseURL: "/url", ShortURL: "AAAAAAAA"},
 	}
 	r := repository.NewMapRepository(d)
-	u := usecase.NewUrlUsecase(r)
-	h := NewUrlHandler(u)
+	mux, err := runTestServer(r)
+	require.NoError(t, err)
+
+	ts := httptest.NewServer(mux)
 
 	type want struct {
 		code     int
@@ -94,12 +93,14 @@ func TestUrlHandler_GetURL(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
+		body    []byte
 		url     string
 		isError bool
 		want    want
 	}{
 		{
 			name:    "Basic test",
+			body:    []byte(""),
 			url:     "/AAAAAAAA",
 			isError: false,
 			want: want{
@@ -110,6 +111,7 @@ func TestUrlHandler_GetURL(t *testing.T) {
 		},
 		{
 			name:    "Can't find url",
+			body:    []byte(""),
 			url:     "/random",
 			isError: true,
 			want: want{
@@ -122,15 +124,11 @@ func TestUrlHandler_GetURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodGet, tt.url, nil)
-			w := httptest.NewRecorder()
-			h.GetURL(w, r)
-
-			res := w.Result()
-			require.Equal(t, tt.want.code, res.StatusCode)
-
+			hdrs := []http.Header{}
+			resp, _ := createTestRequest(t, ts, http.MethodGet, tt.url, hdrs, bytes.NewBuffer(tt.body))
+			require.Equal(t, tt.want.code, resp.StatusCode)
 			if !tt.isError {
-				require.Equal(t, tt.want.location, res.Header.Get("Location"))
+				require.Equal(t, tt.want.location, resp.Header.Get("Location"))
 			}
 		})
 	}

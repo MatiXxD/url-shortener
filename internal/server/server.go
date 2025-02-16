@@ -1,13 +1,17 @@
 package server
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+)
 
 type Server struct {
-	Mux *http.ServeMux
+	Mux *chi.Mux
 }
 
 func New() *Server {
-	return &Server{http.NewServeMux()}
+	return &Server{chi.NewRouter()}
 }
 
 func (s *Server) Start() error {
