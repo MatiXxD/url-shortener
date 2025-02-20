@@ -5,17 +5,20 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/MatiXxD/url-shortener/config"
 	"github.com/MatiXxD/url-shortener/internal/url"
 	"github.com/go-chi/chi/v5"
 )
 
 type UrlHandler struct {
 	urlUsecase url.Usecase
+	cfg        *config.ServiceConfig
 }
 
-func NewUrlHandler(u url.Usecase) *UrlHandler {
+func NewUrlHandler(u url.Usecase, cfg *config.ServiceConfig) *UrlHandler {
 	return &UrlHandler{
 		urlUsecase: u,
+		cfg:        cfg,
 	}
 }
 
@@ -41,7 +44,7 @@ func (uh *UrlHandler) ReduceURL(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte("http://localhost:8080/" + shortURL))
+	_, _ = w.Write([]byte(uh.cfg.BaseURL + "/" + shortURL))
 }
 
 func (uh *UrlHandler) GetURL(w http.ResponseWriter, r *http.Request) {

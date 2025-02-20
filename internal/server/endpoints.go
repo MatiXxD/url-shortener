@@ -10,7 +10,7 @@ import (
 func BindRoutes(s *Server) {
 	r := repository.NewMapRepository(map[string]*models.URL{})
 	u := usecase.NewUrlUsecase(r)
-	h := handlers.NewUrlHandler(u)
+	h := handlers.NewUrlHandler(u, s.Cfg)
 
 	s.Mux.Post("/", h.ReduceURL)
 	s.Mux.Get("/{url}", h.GetURL)

@@ -6,11 +6,21 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/MatiXxD/url-shortener/config"
 	"github.com/MatiXxD/url-shortener/internal/url"
 	"github.com/MatiXxD/url-shortener/internal/url/usecase"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 )
+
+var cfg *config.ServiceConfig
+
+func TestMain(m *testing.M) {
+	cfg = &config.ServiceConfig{
+		Addr:    ":8080",
+		BaseURL: "http://localhost:8080",
+	}
+}
 
 func createTestRequest(t *testing.T, ts *httptest.Server,
 	method, path string, headers []http.Header, body io.Reader,
@@ -43,7 +53,7 @@ func createTestRequest(t *testing.T, ts *httptest.Server,
 
 func runTestServer(r url.Repository) (chi.Router, error) {
 	u := usecase.NewUrlUsecase(r)
-	h := NewUrlHandler(u)
+	h := NewUrlHandler(u, cfg)
 
 	mux := chi.NewRouter()
 	mux.Post("/", h.ReduceURL)
