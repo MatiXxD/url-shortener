@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	cfg := config.ParseConfig()
+	cfg := config.New()
 	s := server.New(cfg)
 	server.BindRoutes(s)
 	if err := s.Start(); err != nil {
