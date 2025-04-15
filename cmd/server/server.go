@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/MatiXxD/url-shortener/pkg/logger"
 	"log"
 
 	"github.com/MatiXxD/url-shortener/config"
@@ -9,8 +10,13 @@ import (
 
 func main() {
 	cfg := config.New()
-	s := server.New(cfg)
-	server.BindRoutes(s)
+	l, err := logger.NewLogger(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := server.New(cfg, l)
+	s.BindRoutes()
 	if err := s.Start(); err != nil {
 		log.Fatalf("Error: %v\n", err)
 	}

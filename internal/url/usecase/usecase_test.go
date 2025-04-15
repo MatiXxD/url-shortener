@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"go.uber.org/zap"
 	"testing"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
@@ -8,14 +9,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var l *zap.Logger
+
+func TestMain(t *testing.M) {
+	var err error
+	l, err = zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TestUsecase_ReduceURL(t *testing.T) {
 	testURL := "https://www.ya.ru"
 	testShortURL := "AAAAA"
 	d := map[string]*models.URL{
 		testURL: models.NewURL(testURL, testShortURL),
 	}
-	r := repository.NewMapRepository(d)
-	uc := NewUrlUsecase(r)
+	r := repository.NewMapRepository(d, l)
+	uc := NewUrlUsecase(r, l)
 
 	t.Run("Success add", func(t *testing.T) {
 		url := "https://www.google.com"
@@ -37,8 +48,8 @@ func TestUsecase_GetURL(t *testing.T) {
 	d := map[string]*models.URL{
 		testURL: models.NewURL(testURL, testShortURL),
 	}
-	r := repository.NewMapRepository(d)
-	uc := NewUrlUsecase(r)
+	r := repository.NewMapRepository(d, l)
+	uc := NewUrlUsecase(r, l)
 
 	t.Run("Success get", func(t *testing.T) {
 		got, ok := uc.GetURL(testShortURL)

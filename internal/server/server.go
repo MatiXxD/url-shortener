@@ -1,6 +1,7 @@
 package server
 
 import (
+	"go.uber.org/zap"
 	"log"
 	"net/http"
 
@@ -9,18 +10,20 @@ import (
 )
 
 type Server struct {
-	Mux *chi.Mux
-	Cfg *config.ServiceConfig
+	mux    *chi.Mux
+	cfg    *config.ServiceConfig
+	logger *zap.Logger
 }
 
-func New(cfg *config.ServiceConfig) *Server {
+func New(cfg *config.ServiceConfig, l *zap.Logger) *Server {
 	return &Server{
-		Mux: chi.NewRouter(),
-		Cfg: cfg,
+		mux:    chi.NewRouter(),
+		cfg:    cfg,
+		logger: l,
 	}
 }
 
 func (s *Server) Start() error {
-	log.Printf("Server running on %s\n", s.Cfg.Addr)
-	return http.ListenAndServe(s.Cfg.Addr, s.Mux)
+	log.Printf("Server running on %s\n", s.cfg.Addr)
+	return http.ListenAndServe(s.cfg.Addr, s.mux)
 }

@@ -15,7 +15,7 @@ func TestUrlHandler_ReduceURL(t *testing.T) {
 	d := map[string]*models.URL{
 		"/url": {BaseURL: "/url", ShortURL: "AAAAAAAA"},
 	}
-	r := repository.NewMapRepository(d)
+	r := repository.NewMapRepository(d, l)
 	mux, err := runTestServer(r)
 	require.NoError(t, err)
 
@@ -80,7 +80,7 @@ func TestUrlHandler_GetURL(t *testing.T) {
 	d := map[string]*models.URL{
 		"/url": {BaseURL: "/url", ShortURL: "AAAAAAAA"},
 	}
-	r := repository.NewMapRepository(d)
+	r := repository.NewMapRepository(d, l)
 	mux, err := runTestServer(r)
 	require.NoError(t, err)
 

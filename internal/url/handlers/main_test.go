@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,11 +15,18 @@ import (
 )
 
 var cfg *config.ServiceConfig
+var l *zap.Logger
 
 func TestMain(m *testing.M) {
 	cfg = &config.ServiceConfig{
 		Addr:    ":8080",
 		BaseURL: "http://localhost:8080",
+	}
+
+	var err error
+	l, err = zap.NewDevelopment()
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -52,8 +60,8 @@ func createTestRequest(t *testing.T, ts *httptest.Server,
 }
 
 func runTestServer(r url.Repository) (chi.Router, error) {
-	u := usecase.NewUrlUsecase(r)
-	h := NewUrlHandler(u, cfg)
+	u := usecase.NewUrlUsecase(r, l)
+	h := NewUrlHandler(u, cfg, l)
 
 	mux := chi.NewRouter()
 	mux.Post("/", h.ReduceURL)

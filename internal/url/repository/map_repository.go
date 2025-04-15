@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"go.uber.org/zap"
 	"sync"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
@@ -8,14 +9,16 @@ import (
 )
 
 type MapRepository struct {
-	db map[string]*models.URL
-	mu sync.RWMutex
+	db     map[string]*models.URL
+	logger *zap.Logger
+	mu     sync.RWMutex
 }
 
-func NewMapRepository(d map[string]*models.URL) url.Repository {
+func NewMapRepository(d map[string]*models.URL, l *zap.Logger) url.Repository {
 	return &MapRepository{
-		db: d,
-		mu: sync.RWMutex{},
+		db:     d,
+		logger: l,
+		mu:     sync.RWMutex{},
 	}
 }
 
