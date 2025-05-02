@@ -1,8 +1,10 @@
 package usecase
 
 import (
-	"go.uber.org/zap"
+	"os"
 	"testing"
+
+	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/MatiXxD/url-shortener/internal/url/repository"
@@ -17,6 +19,8 @@ func TestMain(t *testing.M) {
 	if err != nil {
 		panic(err)
 	}
+
+	os.Exit(t.Run())
 }
 
 func TestUsecase_ReduceURL(t *testing.T) {

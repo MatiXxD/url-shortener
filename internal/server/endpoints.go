@@ -16,4 +16,6 @@ func (s *Server) BindRoutes() {
 
 	s.mux.Post("/", middleware.LogMiddleware(s.logger, http.HandlerFunc(h.ReduceURL)))
 	s.mux.Get("/{url}", middleware.LogMiddleware(s.logger, http.HandlerFunc(h.GetURL)))
+
+	s.mux.Post("/api/shorten", middleware.LogMiddleware(s.logger, http.HandlerFunc(h.ShortenURL)))
 }

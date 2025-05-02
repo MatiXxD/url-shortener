@@ -1,8 +1,10 @@
 package repository
 
 import (
-	"go.uber.org/zap"
+	"os"
 	"testing"
+
+	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/stretchr/testify/require"
@@ -16,6 +18,8 @@ func TestMain(t *testing.M) {
 	if err != nil {
 		panic(err)
 	}
+
+	os.Exit(t.Run())
 }
 
 func TestMapRepository_AddURL(t *testing.T) {

@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"github.com/MatiXxD/url-shortener/internal/models"
+	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
@@ -64,4 +66,35 @@ func (uh *UrlHandler) GetURL(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Location", url)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (uh *UrlHandler) ShortenURL(w http.ResponseWriter, r *http.Request) {
+	contentType := r.Header.Get("Content-Type")
+	if !strings.Contains(contentType, "application/json") {
+		uh.logger.Error("request contains wrong content type")
+		http.Error(w, "Wrong content type", http.StatusUnsupportedMediaType)
+		return
+	}
+
+	reqUrl := new(models.UrlDTO)
+	if err := easyjson.UnmarshalFromReader(r.Body, reqUrl); err != nil {
+		uh.logger.Error("can't unmarshal request body")
+		http.Error(w, "Can't read body", http.StatusInternalServerError)
+		return
+	}
+
+	newUrl, err := uh.urlUsecase.ReduceURL(reqUrl.URL)
+	if err != nil {
+		uh.logger.Error("can't create short URL")
+		http.Error(w, "Can't create short url", http.StatusInternalServerError)
+		return
+	}
+	newUrlDTO := models.NewUrlDTO(newUrl)
+
+	w.Header().Set("Content-Type", "application/json")
+	if _, err := easyjson.MarshalToWriter(newUrlDTO, w); err != nil {
+		uh.logger.Error("can't marshal response body")
+		http.Error(w, "Can't marshal response body", http.StatusInternalServerError)
+		return
+	}
 }

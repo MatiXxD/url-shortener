@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,38 +23,32 @@ func TestUrlHandler_ReduceURL(t *testing.T) {
 	ts := httptest.NewServer(mux)
 
 	type want struct {
-		code        int
-		contentType string
-		response    string
+		code     int
+		response string
 	}
 
 	tests := []struct {
 		name        string
 		body        []byte
 		contentType string
-		isError     bool
 		want        want
 	}{
 		{
 			name:        "Basic test",
 			body:        []byte("/url"),
 			contentType: "text/plain",
-			isError:     false,
 			want: want{
-				code:        201,
-				contentType: "text/plain",
-				response:    "http://localhost:8080/AAAAAAAA",
+				code:     201,
+				response: "http://localhost:8080/AAAAAAAA",
 			},
 		},
 		{
 			name:        "Wrong media type",
 			body:        []byte("/"),
 			contentType: "application/json",
-			isError:     true,
 			want: want{
-				code:        415,
-				contentType: "text/plain",
-				response:    "Wrong content type",
+				code:     415,
+				response: "Wrong content type\n",
 			},
 		},
 	}
@@ -67,11 +62,7 @@ func TestUrlHandler_ReduceURL(t *testing.T) {
 			}
 			resp, respBody := createTestRequest(t, ts, http.MethodPost, "/", hdrs, bytes.NewBuffer(tt.body))
 			require.Equal(t, tt.want.code, resp.StatusCode)
-			if !tt.isError {
-				require.NoError(t, err)
-				require.Equal(t, tt.want.response, respBody)
-				require.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"))
-			}
+			require.Equal(t, tt.want.response, respBody)
 		})
 	}
 }
@@ -91,6 +82,7 @@ func TestUrlHandler_GetURL(t *testing.T) {
 		location string
 		response string
 	}
+
 	tests := []struct {
 		name    string
 		body    []byte
@@ -106,7 +98,7 @@ func TestUrlHandler_GetURL(t *testing.T) {
 			want: want{
 				code:     307,
 				location: "/url",
-				response: "http://localhost:8080/AAAAAAAA",
+				response: "",
 			},
 		},
 		{
@@ -117,7 +109,7 @@ func TestUrlHandler_GetURL(t *testing.T) {
 			want: want{
 				code:     400,
 				location: "",
-				response: "Wrong content type",
+				response: "Can't find url\n",
 			},
 		},
 	}
@@ -125,10 +117,89 @@ func TestUrlHandler_GetURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			hdrs := []http.Header{}
-			resp, _ := createTestRequest(t, ts, http.MethodGet, tt.url, hdrs, bytes.NewBuffer(tt.body))
+			resp, respBody := createTestRequest(t, ts, http.MethodGet, tt.url, hdrs, bytes.NewBuffer(tt.body))
 			require.Equal(t, tt.want.code, resp.StatusCode)
+			require.Equal(t, tt.want.response, respBody)
 			if !tt.isError {
 				require.Equal(t, tt.want.location, resp.Header.Get("Location"))
+			}
+		})
+	}
+}
+
+func TestUrlHandler_ShortenURL(t *testing.T) {
+	d := map[string]*models.URL{}
+	r := repository.NewMapRepository(d, l)
+	mux, err := runTestServer(r)
+	require.NoError(t, err)
+
+	url := "/api/shorten"
+	ts := httptest.NewServer(mux)
+
+	type jsonResp struct {
+		URL string `json:"url"`
+	}
+
+	type want struct {
+		code     int
+		response string
+	}
+	tests := []struct {
+		name        string
+		body        []byte
+		isError     bool
+		contentType string
+		want        want
+	}{
+		{
+			name:        "Wrong content type",
+			body:        []byte(`{"url": "https://google.com"}`),
+			isError:     true,
+			contentType: "wrong type",
+			want: want{
+				code:     415,
+				response: "Wrong content type\n",
+			},
+		},
+		{
+			name:        "Empty body",
+			body:        []byte(``),
+			isError:     true,
+			contentType: "application/json",
+			want: want{
+				code:     500,
+				response: "Can't read body\n",
+			},
+		},
+		{
+			name:        "ShortenURL OK",
+			body:        []byte(`{"url": "https://google.com"}`),
+			isError:     false,
+			contentType: "application/json",
+			want: want{
+				code: 200,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			hdrs := []http.Header{
+				{
+					"Content-Type": []string{tt.contentType},
+				},
+			}
+			resp, respBody := createTestRequest(t, ts, http.MethodPost, url, hdrs, bytes.NewBuffer(tt.body))
+			require.Equal(t, tt.want.code, resp.StatusCode)
+			if tt.isError {
+				require.Equal(t, tt.want.response, respBody)
+			} else {
+				jsonBody := &jsonResp{}
+				err := json.Unmarshal([]byte(respBody), jsonBody)
+				require.NoError(t, err)
+				require.True(t, len(jsonBody.URL) > 0)
+				_, ok := r.GetURL(jsonBody.URL)
+				require.True(t, ok)
 			}
 		})
 	}

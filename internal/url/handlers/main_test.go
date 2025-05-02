@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/MatiXxD/url-shortener/config"
@@ -28,6 +29,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
+
+	os.Exit(m.Run())
 }
 
 func createTestRequest(t *testing.T, ts *httptest.Server,
@@ -66,6 +69,8 @@ func runTestServer(r url.Repository) (chi.Router, error) {
 	mux := chi.NewRouter()
 	mux.Post("/", h.ReduceURL)
 	mux.Get("/{url}", h.GetURL)
+
+	mux.Post("/api/shorten", h.ShortenURL)
 
 	return mux, nil
 }
