@@ -12,6 +12,7 @@ type responseData struct {
 	status int
 	size   int
 }
+
 type loggingResponseWriter struct {
 	http.ResponseWriter
 	data *responseData
