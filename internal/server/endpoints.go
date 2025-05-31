@@ -1,12 +1,13 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/MatiXxD/url-shortener/internal/middleware"
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/MatiXxD/url-shortener/internal/url/handlers"
 	"github.com/MatiXxD/url-shortener/internal/url/repository"
 	"github.com/MatiXxD/url-shortener/internal/url/usecase"
-	"net/http"
 )
 
 func (s *Server) BindRoutes() {

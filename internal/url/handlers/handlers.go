@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"github.com/MatiXxD/url-shortener/internal/models"
-	"github.com/mailru/easyjson"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/MatiXxD/url-shortener/internal/models"
+	"github.com/mailru/easyjson"
+	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/config"
 	"github.com/MatiXxD/url-shortener/internal/url"

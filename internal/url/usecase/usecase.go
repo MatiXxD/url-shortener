@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+
 	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/internal/url"

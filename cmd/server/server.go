@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/MatiXxD/url-shortener/pkg/logger"
 	"log"
+
+	"github.com/MatiXxD/url-shortener/pkg/logger"
 
 	"github.com/MatiXxD/url-shortener/config"
 	"github.com/MatiXxD/url-shortener/internal/server"

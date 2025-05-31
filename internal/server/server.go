@@ -1,9 +1,10 @@
 package server
 
 import (
-	"go.uber.org/zap"
 	"log"
 	"net/http"
+
+	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/config"
 	"github.com/go-chi/chi/v5"

@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/config"
 	"github.com/MatiXxD/url-shortener/internal/url"
@@ -15,8 +16,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var cfg *config.ServiceConfig
-var l *zap.Logger
+var (
+	cfg *config.ServiceConfig
+	l   *zap.Logger
+)
 
 func TestMain(m *testing.M) {
 	cfg = &config.ServiceConfig{

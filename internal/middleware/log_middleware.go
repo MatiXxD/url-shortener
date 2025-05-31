@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type responseData struct {
