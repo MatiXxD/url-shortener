@@ -1,5 +1,7 @@
 package models
 
+import "github.com/google/uuid"
+
 //go:generate easyjson -all url.go
 
 type UrlDTO struct {
@@ -13,12 +15,14 @@ func NewUrlDTO(url string) *UrlDTO {
 }
 
 type URL struct {
-	BaseURL  string `json:"baseUrl"`
-	ShortURL string `json:"shortUrl"`
+	ID       uuid.UUID `json:"id"`
+	BaseURL  string    `json:"baseUrl"`
+	ShortURL string    `json:"shortUrl"`
 }
 
 func NewURL(url, shortURL string) *URL {
 	return &URL{
+		ID:       uuid.New(),
 		BaseURL:  url,
 		ShortURL: shortURL,
 	}

@@ -3,9 +3,8 @@ package usecase
 import (
 	"fmt"
 
-	"go.uber.org/zap"
-
 	"github.com/MatiXxD/url-shortener/internal/url"
+	"github.com/MatiXxD/url-shortener/pkg/logger"
 	"github.com/MatiXxD/url-shortener/pkg/tokengen"
 )
 
@@ -13,10 +12,10 @@ const tokenSize = 10
 
 type UrlUsecase struct {
 	repo   url.Repository
-	logger *zap.Logger
+	logger *logger.Logger
 }
 
-func NewUrlUsecase(r url.Repository, l *zap.Logger) url.Usecase {
+func NewUrlUsecase(r url.Repository, l *logger.Logger) url.Usecase {
 	return &UrlUsecase{
 		repo:   r,
 		logger: l,
@@ -28,7 +27,7 @@ func (uu *UrlUsecase) ReduceURL(url string) (string, error) {
 	shortURL, err := uu.repo.AddURL(url, genURL)
 	if err != nil {
 		uu.logger.Error("can't add short url to database")
-		return "", fmt.Errorf("Can't add short url to database: %v", err)
+		return "", fmt.Errorf("can't add short url to database: %v", err)
 	}
 	return shortURL, nil
 }

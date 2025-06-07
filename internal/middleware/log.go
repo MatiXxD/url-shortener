@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"go.uber.org/zap"
+	"github.com/MatiXxD/url-shortener/pkg/logger"
 )
 
 type responseData struct {
@@ -29,7 +29,7 @@ func (w *loggingResponseWriter) WriteHeader(status int) {
 	w.data.status = status
 }
 
-func LogMiddleware(logger *zap.Logger, h http.Handler) http.HandlerFunc {
+func LogMiddleware(logger *logger.Logger, h http.Handler) http.HandlerFunc {
 	lf := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 

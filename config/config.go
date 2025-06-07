@@ -9,12 +9,14 @@ type ServiceConfig struct {
 	Addr        string
 	BaseURL     string
 	LoggerLevel string
+	FilePath    string
 }
 
 const (
 	defaultAddr        = ":8080"
 	defaultBaseURL     = "http://localhost:8080"
 	defaultLoggerLevel = "info"
+	defaultFilePath    = "/tmp/short-url-db.json"
 )
 
 func New() *ServiceConfig {
@@ -23,6 +25,8 @@ func New() *ServiceConfig {
 	flag.StringVar(&cfg.Addr, "a", defaultAddr, "Addres and port for server")
 	flag.StringVar(&cfg.BaseURL, "b", defaultBaseURL, "BaseURL for short ulrs")
 	flag.StringVar(&cfg.LoggerLevel, "l", defaultLoggerLevel, "Loger level")
+	flag.StringVar(&cfg.FilePath, "f", defaultFilePath, "File path to store URL")
+
 	flag.Parse()
 
 	parseEnv(cfg)
@@ -39,5 +43,8 @@ func parseEnv(cfg *ServiceConfig) {
 	}
 	if logLvl := os.Getenv("LOG_LVL"); logLvl != "" {
 		cfg.LoggerLevel = logLvl
+	}
+	if filePath := os.Getenv("FILE_STORAGE_PATH"); filePath != "" {
+		cfg.FilePath = filePath
 	}
 }

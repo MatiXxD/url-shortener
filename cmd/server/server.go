@@ -17,8 +17,11 @@ func main() {
 	}
 
 	s := server.New(cfg, l)
-	s.BindRoutes()
+	if err := s.BindRoutes(); err != nil {
+		l.Fatalf("failed to bind routes: %v", err)
+	}
+
 	if err := s.Start(); err != nil {
-		log.Fatalf("Error: %v\n", err)
+		l.Fatalf("failed to start server: %v", err)
 	}
 }

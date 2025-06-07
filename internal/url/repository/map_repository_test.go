@@ -1,26 +1,11 @@
 package repository
 
 import (
-	"os"
 	"testing"
-
-	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/stretchr/testify/require"
 )
-
-var l *zap.Logger
-
-func TestMain(t *testing.M) {
-	var err error
-	l, err = zap.NewDevelopment()
-	if err != nil {
-		panic(err)
-	}
-
-	os.Exit(t.Run())
-}
 
 func TestMapRepository_AddURL(t *testing.T) {
 	testURL := "https://www.google.com"

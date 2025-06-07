@@ -5,22 +5,21 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/MatiXxD/url-shortener/internal/models"
-	"github.com/mailru/easyjson"
-	"go.uber.org/zap"
-
 	"github.com/MatiXxD/url-shortener/config"
+	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/MatiXxD/url-shortener/internal/url"
+	"github.com/MatiXxD/url-shortener/pkg/logger"
 	"github.com/go-chi/chi/v5"
+	"github.com/mailru/easyjson"
 )
 
 type UrlHandler struct {
 	urlUsecase url.Usecase
 	cfg        *config.ServiceConfig
-	logger     *zap.Logger
+	logger     *logger.Logger
 }
 
-func NewUrlHandler(u url.Usecase, cfg *config.ServiceConfig, l *zap.Logger) *UrlHandler {
+func NewUrlHandler(u url.Usecase, cfg *config.ServiceConfig, l *logger.Logger) *UrlHandler {
 	return &UrlHandler{
 		urlUsecase: u,
 		cfg:        cfg,

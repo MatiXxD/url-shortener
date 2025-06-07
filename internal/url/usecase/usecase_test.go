@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/MatiXxD/url-shortener/pkg/logger"
 	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
@@ -11,14 +12,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var l *zap.Logger
+var l *logger.Logger
 
 func TestMain(t *testing.M) {
-	var err error
-	l, err = zap.NewDevelopment()
+	zl, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
 	}
+
+	l = &logger.Logger{zl.Sugar()}
 
 	os.Exit(t.Run())
 }

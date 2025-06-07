@@ -5,7 +5,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewLogger(serviceCfg *config.ServiceConfig) (*zap.Logger, error) {
+type Logger struct {
+	*zap.SugaredLogger
+}
+
+func NewLogger(serviceCfg *config.ServiceConfig) (*Logger, error) {
 	lvl, err := zap.ParseAtomicLevel(serviceCfg.LoggerLevel)
 	if err != nil {
 		return nil, err
@@ -18,5 +22,5 @@ func NewLogger(serviceCfg *config.ServiceConfig) (*zap.Logger, error) {
 		return nil, err
 	}
 
-	return logger, nil
+	return &Logger{logger.Sugar()}, nil
 }

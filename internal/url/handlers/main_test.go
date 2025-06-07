@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/MatiXxD/url-shortener/pkg/logger"
 	"go.uber.org/zap"
 
 	"github.com/MatiXxD/url-shortener/config"
@@ -18,7 +19,7 @@ import (
 
 var (
 	cfg *config.ServiceConfig
-	l   *zap.Logger
+	l   *logger.Logger
 )
 
 func TestMain(m *testing.M) {
@@ -28,10 +29,12 @@ func TestMain(m *testing.M) {
 	}
 
 	var err error
-	l, err = zap.NewDevelopment()
+	zl, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
 	}
+
+	l = &logger.Logger{zl.Sugar()}
 
 	os.Exit(m.Run())
 }

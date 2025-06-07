@@ -102,6 +102,10 @@ func easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels1(in *jlexe
 			continue
 		}
 		switch key {
+		case "id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.ID).UnmarshalText(data))
+			}
 		case "baseUrl":
 			out.BaseURL = string(in.String())
 		case "shortUrl":
@@ -121,8 +125,13 @@ func easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels1(out *jwri
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"baseUrl\":"
+		const prefix string = ",\"id\":"
 		out.RawString(prefix[1:])
+		out.RawText((in.ID).MarshalText())
+	}
+	{
+		const prefix string = ",\"baseUrl\":"
+		out.RawString(prefix)
 		out.String(string(in.BaseURL))
 	}
 	{

@@ -3,19 +3,18 @@ package repository
 import (
 	"sync"
 
-	"go.uber.org/zap"
-
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/MatiXxD/url-shortener/internal/url"
+	"github.com/MatiXxD/url-shortener/pkg/logger"
 )
 
 type MapRepository struct {
 	db     map[string]*models.URL
-	logger *zap.Logger
+	logger *logger.Logger
 	mu     sync.RWMutex
 }
 
-func NewMapRepository(d map[string]*models.URL, l *zap.Logger) url.Repository {
+func NewMapRepository(d map[string]*models.URL, l *logger.Logger) url.Repository {
 	return &MapRepository{
 		db:     d,
 		logger: l,
