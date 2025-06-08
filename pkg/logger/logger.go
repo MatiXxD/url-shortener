@@ -24,3 +24,7 @@ func NewLogger(serviceCfg *config.ServiceConfig) (*Logger, error) {
 
 	return &Logger{logger.Sugar()}, nil
 }
+
+func (l *Logger) With(args ...interface{}) *Logger {
+	return &Logger{l.SugaredLogger.With(args...)}
+}

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/MatiXxD/url-shortener/config"
+	mw "github.com/MatiXxD/url-shortener/internal/middleware"
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/MatiXxD/url-shortener/internal/url"
 	"github.com/MatiXxD/url-shortener/pkg/logger"
@@ -28,9 +29,15 @@ func NewUrlHandler(u url.Usecase, cfg *config.ServiceConfig, l *logger.Logger) *
 }
 
 func (uh *UrlHandler) ReduceURL(w http.ResponseWriter, r *http.Request) {
+	logger := uh.logger
+	reqID := mw.GetRequestID(r.Context())
+	if reqID != "" {
+		logger = uh.logger.With("request_id", reqID)
+	}
+
 	contentType := r.Header.Get("Content-Type")
 	if !strings.Contains(contentType, "text/plain") {
-		uh.logger.Error("request contains wrong content type")
+		logger.Error("request contains wrong content type")
 		http.Error(w, "Wrong content type", http.StatusUnsupportedMediaType)
 		return
 	}
@@ -38,14 +45,14 @@ func (uh *UrlHandler) ReduceURL(w http.ResponseWriter, r *http.Request) {
 	url, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		uh.logger.Error("request doesn't have body")
+		logger.Error("request doesn't have body")
 		http.Error(w, "Can't read request body", http.StatusBadRequest)
 		return
 	}
 
 	shortURL, err := uh.urlUsecase.ReduceURL(string(url))
 	if err != nil {
-		uh.logger.Error("can't create short URL")
+		logger.Error("can't create short URL")
 		http.Error(w, "Can't create short url", http.StatusInternalServerError)
 		return
 	}
@@ -56,10 +63,16 @@ func (uh *UrlHandler) ReduceURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh *UrlHandler) GetURL(w http.ResponseWriter, r *http.Request) {
+	logger := uh.logger
+	reqID := mw.GetRequestID(r.Context())
+	if reqID != "" {
+		logger = uh.logger.With("request_id", reqID)
+	}
+
 	shortURL := chi.URLParam(r, "url")
 	url, ok := uh.urlUsecase.GetURL(shortURL)
 	if !ok {
-		uh.logger.Error("can't find url")
+		logger.Error("can't find url")
 		http.Error(w, "Can't find url", http.StatusBadRequest)
 		return
 	}
@@ -69,23 +82,29 @@ func (uh *UrlHandler) GetURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh *UrlHandler) ShortenURL(w http.ResponseWriter, r *http.Request) {
+	logger := uh.logger
+	reqID := mw.GetRequestID(r.Context())
+	if reqID != "" {
+		logger = uh.logger.With("request_id", reqID)
+	}
+
 	contentType := r.Header.Get("Content-Type")
 	if !strings.Contains(contentType, "application/json") {
-		uh.logger.Error("request contains wrong content type")
+		logger.Error("request contains wrong content type")
 		http.Error(w, "Wrong content type", http.StatusUnsupportedMediaType)
 		return
 	}
 
 	reqUrl := new(models.UrlDTO)
 	if err := easyjson.UnmarshalFromReader(r.Body, reqUrl); err != nil {
-		uh.logger.Error("can't unmarshal request body")
+		logger.Error("can't unmarshal request body")
 		http.Error(w, "Can't read body", http.StatusInternalServerError)
 		return
 	}
 
 	newUrl, err := uh.urlUsecase.ReduceURL(reqUrl.URL)
 	if err != nil {
-		uh.logger.Error("can't create short URL")
+		logger.Error("can't create short URL")
 		http.Error(w, "Can't create short url", http.StatusInternalServerError)
 		return
 	}
@@ -93,7 +112,7 @@ func (uh *UrlHandler) ShortenURL(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if _, err := easyjson.MarshalToWriter(newUrlDTO, w); err != nil {
-		uh.logger.Error("can't marshal response body")
+		logger.Error("can't marshal response body")
 		http.Error(w, "Can't marshal response body", http.StatusInternalServerError)
 		return
 	}

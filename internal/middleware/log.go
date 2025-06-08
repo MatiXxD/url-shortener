@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -32,6 +31,9 @@ func (w *loggingResponseWriter) WriteHeader(status int) {
 func LogMiddleware(logger *logger.Logger, h http.Handler) http.HandlerFunc {
 	lf := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+		logger = logger.With("request_id", GetRequestID(r.Context()))
+
+		logger.Infof("got request: %s %s", r.Method, r.RequestURI)
 
 		rd := &responseData{
 			status: http.StatusOK,
@@ -41,15 +43,16 @@ func LogMiddleware(logger *logger.Logger, h http.Handler) http.HandlerFunc {
 			ResponseWriter: w,
 			data:           rd,
 		}
+
 		h.ServeHTTP(lw, r)
 
 		duration := time.Since(start)
-		logger.Info(fmt.Sprintf("[%s] %s %d: size %d: time %s",
+		logger.Infof("request done: %s %s %d: size %d: time %s",
 			r.Method,
 			r.RequestURI,
 			rd.status,
 			rd.size,
-			duration.String()),
+			duration.String(),
 		)
 	}
 	return lf

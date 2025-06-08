@@ -26,6 +26,7 @@ func (s *Server) BindRoutes() error {
 	}
 
 	middlewares := []middleware{
+		mw.RequestIdMiddleware,
 		logMiddleware,
 		mw.CompressMiddleware,
 	}
