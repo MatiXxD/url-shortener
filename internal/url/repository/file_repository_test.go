@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"testing"
@@ -19,17 +20,17 @@ func TestFileRepository_initCache(t *testing.T) {
 	}{
 		{
 			name:        "valid JSON",
-			fileContent: `{"id":"5f2ee353-1946-4b78-8801-eebd5ca17aee","shortUrl":"4rSPg8ap","baseUrl":"http://yandex.ru"}`,
-			wantCache:   map[string]*models.URL{"http://yandex.ru": &models.URL{ID: uuid.MustParse("5f2ee353-1946-4b78-8801-eebd5ca17aee"), ShortURL: "4rSPg8ap", BaseURL: "http://yandex.ru"}},
+			fileContent: `{"id": 1, "correlation_id":"5f2ee353-1946-4b78-8801-eebd5ca17aee","short_url":"4rSPg8ap","original_url":"http://yandex.ru"}`,
+			wantCache:   map[string]*models.URL{"http://yandex.ru": {ID: 1, CorrelationID: "5f2ee353-1946-4b78-8801-eebd5ca17aee", ShortURL: "4rSPg8ap", BaseURL: "http://yandex.ru"}},
 			wantErr:     false,
 		},
 		{
 			name: "multiple JSON",
-			fileContent: `{"id":"5f2ee353-1946-4b78-8801-eebd5ca17aee","shortUrl":"4rSPg8ap","baseUrl":"http://yandex.ru"}
-										{"id":"3d17d9d7-68a4-40b4-a525-47c64383f3e3","shortUrl":"edVPg3ks","baseUrl":"http://ya.ru"}`,
+			fileContent: `{"id": 1, "correlation_id":"5f2ee353-1946-4b78-8801-eebd5ca17aee","short_url":"4rSPg8ap","original_url":"http://yandex.ru"}
+			{"id": 2,  "correlation_id":"3d17d9d7-68a4-40b4-a525-47c64383f3e3","short_url":"edVPg3ks","original_url":"http://ya.ru"}`,
 			wantCache: map[string]*models.URL{
-				"http://yandex.ru": &models.URL{ID: uuid.MustParse("5f2ee353-1946-4b78-8801-eebd5ca17aee"), ShortURL: "4rSPg8ap", BaseURL: "http://yandex.ru"},
-				"http://ya.ru":     &models.URL{ID: uuid.MustParse("3d17d9d7-68a4-40b4-a525-47c64383f3e3"), ShortURL: "edVPg3ks", BaseURL: "http://ya.ru"},
+				"http://yandex.ru": {ID: 1, CorrelationID: "5f2ee353-1946-4b78-8801-eebd5ca17aee", ShortURL: "4rSPg8ap", BaseURL: "http://yandex.ru"},
+				"http://ya.ru":     {ID: 2, CorrelationID: "3d17d9d7-68a4-40b4-a525-47c64383f3e3", ShortURL: "edVPg3ks", BaseURL: "http://ya.ru"},
 			},
 			wantErr: false,
 		},
@@ -78,14 +79,16 @@ func TestFileRepository_saveURL(t *testing.T) {
 		{
 			name: "simple valid URL",
 			input: &models.URL{
-				ID:       uuid.MustParse("5f2ee353-1946-4b78-8801-eebd5ca17aee"),
-				ShortURL: "abc123",
-				BaseURL:  "http://example.com",
+				ID:            1,
+				CorrelationID: "5f2ee353-1946-4b78-8801-eebd5ca17aee",
+				ShortURL:      "abc123",
+				BaseURL:       "http://example.com",
 			},
 			expected: &models.URL{
-				ID:       uuid.MustParse("5f2ee353-1946-4b78-8801-eebd5ca17aee"),
-				ShortURL: "abc123",
-				BaseURL:  "http://example.com",
+				ID:            1,
+				CorrelationID: "5f2ee353-1946-4b78-8801-eebd5ca17aee",
+				ShortURL:      "abc123",
+				BaseURL:       "http://example.com",
 			},
 		},
 	}
@@ -138,9 +141,10 @@ func TestFileRepository_AddURL(t *testing.T) {
 			name: "URL already in cache",
 			initialCache: map[string]*models.URL{
 				"http://example.com": {
-					ID:       uuid.New(),
-					BaseURL:  "http://example.com",
-					ShortURL: "cached123",
+					ID:            1,
+					CorrelationID: uuid.New().String(),
+					BaseURL:       "http://example.com",
+					ShortURL:      "cached123",
 				},
 			},
 			inputURL:      "http://example.com",
@@ -157,7 +161,11 @@ func TestFileRepository_AddURL(t *testing.T) {
 
 			fr.cache = tt.initialCache
 
-			got, err := fr.AddURL(tt.inputURL, tt.inputShortURL)
+			got, err := fr.AddURL(context.Background(), &models.URL{
+				BaseURL:  tt.inputURL,
+				ShortURL: tt.inputShortURL,
+			})
+
 			require.NoError(t, err)
 			require.Equal(t, tt.wantShortURL, got)
 
@@ -188,9 +196,10 @@ func TestFileRepository_GetURL(t *testing.T) {
 			name: "short URL exists",
 			cache: map[string]*models.URL{
 				"http://example.com": {
-					ID:       uuid.New(),
-					BaseURL:  "http://example.com",
-					ShortURL: "abc123",
+					ID:            1,
+					CorrelationID: uuid.New().String(),
+					BaseURL:       "http://example.com",
+					ShortURL:      "abc123",
 				},
 			},
 			inputShort:   "abc123",
@@ -201,9 +210,10 @@ func TestFileRepository_GetURL(t *testing.T) {
 			name: "short URL does not exist",
 			cache: map[string]*models.URL{
 				"http://example.com": {
-					ID:       uuid.New(),
-					BaseURL:  "http://example.com",
-					ShortURL: "abc123",
+					ID:            1,
+					CorrelationID: uuid.New().String(),
+					BaseURL:       "http://example.com",
+					ShortURL:      "abc123",
 				},
 			},
 			inputShort:   "not_found",
@@ -226,9 +236,14 @@ func TestFileRepository_GetURL(t *testing.T) {
 
 			fr.cache = tt.cache
 
-			gotURL, found := fr.GetURL(tt.inputShort)
-			require.Equal(t, tt.wantFound, found)
-			require.Equal(t, tt.wantOriginal, gotURL)
+			gotURL, err := fr.GetURL(context.Background(), tt.inputShort)
+			if !tt.wantFound {
+				require.ErrorContains(t, err, "not found")
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.wantOriginal, gotURL.BaseURL)
+
+			}
 		})
 	}
 }

@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"context"
 	"testing"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -11,21 +13,36 @@ func TestMapRepository_AddURL(t *testing.T) {
 	testURL := "https://www.google.com"
 	testShortURL := "AAAAA"
 	d := map[string]*models.URL{
-		testURL: models.NewURL(testURL, testShortURL),
+		testURL: {
+			BaseURL:  testURL,
+			ShortURL: testShortURL,
+		},
 	}
 	repo := NewMapRepository(d, l)
 
 	t.Run("Success add", func(t *testing.T) {
 		url := "https://ya.ru"
 		shortURL := "BBBBB"
-		got, err := repo.AddURL(url, shortURL)
+		corrID := uuid.New().String()
+		got, err := repo.AddURL(context.Background(), &models.URL{
+			CorrelationID: corrID,
+			BaseURL:       url,
+			ShortURL:      shortURL,
+		})
+
 		require.NoError(t, err)
 		require.Equal(t, shortURL, got)
 	})
 
 	t.Run("Alredy exists", func(t *testing.T) {
 		shortURL := "CCCCC"
-		got, err := repo.AddURL(testURL, shortURL)
+		corrID := uuid.New().String()
+		got, err := repo.AddURL(context.Background(), &models.URL{
+			CorrelationID: corrID,
+			BaseURL:       testURL,
+			ShortURL:      shortURL,
+		})
+
 		require.NoError(t, err)
 		require.Equal(t, testShortURL, got)
 	})
@@ -34,21 +51,25 @@ func TestMapRepository_AddURL(t *testing.T) {
 func TestMapRepository_GetURL(t *testing.T) {
 	testURL := "https://www.google.com"
 	testShortURL := "AAAAA"
+	corrID := uuid.New().String()
 	d := map[string]*models.URL{
-		testURL: models.NewURL(testURL, testShortURL),
+		testURL: (&models.URL{
+			CorrelationID: corrID,
+			BaseURL:       testURL,
+			ShortURL:      testShortURL,
+		}),
 	}
 	repo := NewMapRepository(d, l)
 
 	t.Run("Success get", func(t *testing.T) {
-		getURL, ok := repo.GetURL(testShortURL)
-		require.Equal(t, true, ok)
-		require.Equal(t, testURL, getURL)
+		getURL, err := repo.GetURL(context.Background(), testShortURL)
+		require.NoError(t, err)
+		require.Equal(t, testURL, getURL.BaseURL)
 	})
 
 	t.Run("Can't get url", func(t *testing.T) {
 		shortURL := "https://www.random.com"
-		getURL, ok := repo.GetURL(shortURL)
-		require.Equal(t, false, ok)
-		require.Zero(t, getURL)
+		_, err := repo.GetURL(context.Background(), shortURL)
+		require.ErrorContains(t, err, "not found")
 	})
 }

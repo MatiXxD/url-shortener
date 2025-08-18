@@ -2,10 +2,12 @@ package repository
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
 	"github.com/MatiXxD/url-shortener/pkg/logger"
@@ -53,10 +55,10 @@ func NewFileRepository(filename string, logger *logger.Logger) (*FileRepository,
 	return fr, nil
 }
 
-func (fr *FileRepository) AddURL(url, shortURL string) (string, error) {
+func (fr *FileRepository) AddURL(ctx context.Context, shortenURL *models.URL) (string, error) {
 	fr.mu.RLock()
-	if got, ok := fr.cache[url]; ok {
-		fr.logger.Infof("cache hit for %s: %v", url, got)
+	if got, ok := fr.cache[shortenURL.BaseURL]; ok {
+		fr.logger.Infof("cache hit for %s: %v", shortenURL.BaseURL, got)
 		fr.mu.RUnlock()
 		return got.ShortURL, nil
 	}
@@ -65,30 +67,59 @@ func (fr *FileRepository) AddURL(url, shortURL string) (string, error) {
 	fr.mu.Lock()
 	defer fr.mu.Unlock()
 
-	u := models.NewURL(url, shortURL)
-	fr.cache[url] = u
+	url := &models.URL{
+		CorrelationID: shortenURL.CorrelationID,
+		BaseURL:       shortenURL.BaseURL,
+		ShortURL:      shortenURL.ShortURL,
+		CreateAt:      time.Now(),
+	}
+
+	fr.cache[shortenURL.BaseURL] = url
 
 	if fr.isSaveMode {
-		if err := fr.saveURL(u); err != nil {
-			fr.logger.Errorf("failed to save url %v: %v", url, err)
+		if err := fr.saveURL(url); err != nil {
+			fr.logger.Errorf("failed to save url %s: %v", url.BaseURL, err)
 			return "", fmt.Errorf("failed to save url: %w", err)
 		}
 	}
 
-	return shortURL, nil
+	return shortenURL.ShortURL, nil
 }
 
-func (fr *FileRepository) GetURL(shortURL string) (string, bool) {
+func (mr *FileRepository) BatchAddURL(ctx context.Context, urls []*models.URL) ([]*models.URL, error) {
+	res := make([]*models.URL, 0, len(urls))
+
+	for _, u := range urls {
+		shortUrl, err := mr.AddURL(ctx, u)
+		if err != nil {
+			return res, fmt.Errorf("failed to add url=%s: %w", u.BaseURL, err)
+		}
+
+		res = append(res, &models.URL{
+			CorrelationID: u.CorrelationID,
+			BaseURL:       u.BaseURL,
+			ShortURL:      shortUrl,
+		})
+	}
+
+	return res, nil
+}
+
+func (fr *FileRepository) GetURL(ctx context.Context, shortURL string) (*models.URL, error) {
 	fr.mu.RLock()
 	defer fr.mu.RUnlock()
 
-	for k, v := range fr.cache {
+	for _, v := range fr.cache {
 		if v.ShortURL == shortURL {
-			return k, true
+			return &models.URL{
+				CorrelationID: v.CorrelationID,
+				BaseURL:       v.BaseURL,
+				ShortURL:      v.ShortURL,
+			}, nil
 		}
 	}
 
-	return "", false
+	return nil, fmt.Errorf("url was not found")
 }
 
 func (fr *FileRepository) initCache() error {

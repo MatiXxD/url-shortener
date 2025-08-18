@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -14,30 +13,12 @@ const (
 	connTimeout = 10 // connTimeout connection timeout in seconds
 )
 
-type Config struct {
-	User     string
-	Password string
-	Host     string
-	Port     string
-	Database string
-	SSLMode  string
-}
-
 type DB struct {
 	Pool *pgxpool.Pool
 }
 
-func (cfg *Config) ConnStr() string {
-	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database, cfg.SSLMode,
-	)
-}
-
-func New() (*pgxpool.Pool, error) {
-	cfg := readEnvs()
-
-	pgCfg, err := pgxpool.ParseConfig(cfg.ConnStr())
+func New(connStr string) (*DB, error) {
+	pgCfg, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create postgres config: %w", err)
 	}
@@ -57,7 +38,7 @@ func New() (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return pool, nil
+	return &DB{Pool: pool}, nil
 }
 
 func (db *DB) Close() {
@@ -66,10 +47,7 @@ func (db *DB) Close() {
 	}
 }
 
-func Wait(maxWait time.Duration, pingInterval time.Duration) error {
-	cfg := readEnvs()
-	connStr := cfg.ConnStr()
-
+func Wait(connStr string, maxWait time.Duration, pingInterval time.Duration) error {
 	deadline := time.Now().Add(maxWait)
 
 	for {
@@ -93,16 +71,5 @@ func Wait(maxWait time.Duration, pingInterval time.Duration) error {
 		}
 
 		time.Sleep(pingInterval)
-	}
-}
-
-func readEnvs() *Config {
-	return &Config{
-		User:     os.Getenv("POSTGRES_USER"),
-		Password: os.Getenv("POSTGRES_PASSWORD"),
-		Host:     os.Getenv("POSTGRES_HOST"),
-		Port:     os.Getenv("POSTGRES_PORT"),
-		Database: os.Getenv("POSTGRES_DB"),
-		SSLMode:  os.Getenv("POSTGRES_SSLMODE"),
 	}
 }

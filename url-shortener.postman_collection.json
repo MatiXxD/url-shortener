@@ -1,0 +1,196 @@
+{
+	"info": {
+		"_postman_id": "ff4843b1-247b-49fb-b6a0-21ca0cb3b4f2",
+		"name": "url-shortener",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38504534"
+	},
+	"item": [
+		{
+			"name": "Create ShortURL",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/plain",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "https://google.com",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create ShortURL (JSON)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "Content-Encoding",
+						"value": "gzip",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"url\": \"https://ya.ru\"\n}",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/shorten",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"shorten"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Batch Create ShortURL (JSON)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "",
+						"type": "text"
+					},
+					{
+						"key": "Content-Encoding",
+						"value": "gzip",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"correlation_id\": \"5e0f8c64-2f27-4a35-880a-e30349317ee5\",\n        \"original_url\": \"https://github.com\"\n    },\n    {\n        \"correlation_id\": \"96da9b0a-4cdc-40c2-b10f-bcea322bc97c\",\n        \"original_url\": \"https://www.youtube.com/\"\n    },\n    {\n        \"correlation_id\": \"90fc1ff6-2b1a-47b1-a618-833a59f48c0e\",\n        \"original_url\": \"https://vk.com\"\n    }\n]\n",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/shorten/batch",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"shorten",
+						"batch"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create ShortURL (wrong content-type)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "https://google.com",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get ShortURL",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/plain",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8080/4JNzs6G86j",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"4JNzs6G86j"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

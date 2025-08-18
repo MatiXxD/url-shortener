@@ -36,8 +36,12 @@ func easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels(in *jlexer
 			continue
 		}
 		switch key {
-		case "url":
-			out.URL = string(in.String())
+		case "correlation_id":
+			out.CorrelationID = string(in.String())
+		case "original_url":
+			out.OriginURL = string(in.String())
+		case "short_url":
+			out.ShortURL = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -53,9 +57,19 @@ func easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels(out *jwrit
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"url\":"
+		const prefix string = ",\"correlation_id\":"
 		out.RawString(prefix[1:])
-		out.String(string(in.URL))
+		out.String(string(in.CorrelationID))
+	}
+	if in.OriginURL != "" {
+		const prefix string = ",\"original_url\":"
+		out.RawString(prefix)
+		out.String(string(in.OriginURL))
+	}
+	if in.ShortURL != "" {
+		const prefix string = ",\"short_url\":"
+		out.RawString(prefix)
+		out.String(string(in.ShortURL))
 	}
 	out.RawByte('}')
 }
@@ -103,13 +117,19 @@ func easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels1(in *jlexe
 		}
 		switch key {
 		case "id":
-			if data := in.UnsafeBytes(); in.Ok() {
-				in.AddError((out.ID).UnmarshalText(data))
-			}
-		case "baseUrl":
+			out.ID = int(in.Int())
+		case "correlation_id":
+			out.CorrelationID = string(in.String())
+		case "original_url":
 			out.BaseURL = string(in.String())
-		case "shortUrl":
+		case "short_url":
 			out.ShortURL = string(in.String())
+		case "created_ad":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreateAt).UnmarshalJSON(data))
+			}
+		case "deleted":
+			out.IsDeleted = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -124,20 +144,46 @@ func easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels1(out *jwri
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.ID != 0 {
 		const prefix string = ",\"id\":"
+		first = false
 		out.RawString(prefix[1:])
-		out.RawText((in.ID).MarshalText())
+		out.Int(int(in.ID))
+	}
+	if in.CorrelationID != "" {
+		const prefix string = ",\"correlation_id\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.CorrelationID))
 	}
 	{
-		const prefix string = ",\"baseUrl\":"
-		out.RawString(prefix)
+		const prefix string = ",\"original_url\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.BaseURL))
 	}
 	{
-		const prefix string = ",\"shortUrl\":"
+		const prefix string = ",\"short_url\":"
 		out.RawString(prefix)
 		out.String(string(in.ShortURL))
+	}
+	if true {
+		const prefix string = ",\"created_ad\":"
+		out.RawString(prefix)
+		out.Raw((in.CreateAt).MarshalJSON())
+	}
+	if in.IsDeleted {
+		const prefix string = ",\"deleted\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.IsDeleted))
 	}
 	out.RawByte('}')
 }
@@ -164,4 +210,136 @@ func (v *URL) UnmarshalJSON(data []byte) error {
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *URL) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels1(l, v)
+}
+func easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels2(in *jlexer.Lexer, out *ShortenURLRespBody) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "short_url":
+			out.ShortURL = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels2(out *jwriter.Writer, in ShortenURLRespBody) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"short_url\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.ShortURL))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ShortenURLRespBody) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels2(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ShortenURLRespBody) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels2(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ShortenURLRespBody) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels2(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ShortenURLRespBody) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels2(l, v)
+}
+func easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels3(in *jlexer.Lexer, out *ShortenURLReqBody) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "url":
+			out.URL = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels3(out *jwriter.Writer, in ShortenURLReqBody) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"url\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.URL))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ShortenURLReqBody) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels3(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ShortenURLReqBody) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonF48b0fb9EncodeGithubComMatiXxDUrlShortenerInternalModels3(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ShortenURLReqBody) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels3(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ShortenURLReqBody) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonF48b0fb9DecodeGithubComMatiXxDUrlShortenerInternalModels3(l, v)
 }

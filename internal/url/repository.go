@@ -1,6 +1,13 @@
 package url
 
+import (
+	"context"
+
+	"github.com/MatiXxD/url-shortener/internal/models"
+)
+
 type Repository interface {
-	AddURL(url, shortURL string) (string, error)
-	GetURL(shortURL string) (string, bool)
+	AddURL(context.Context, *models.URL) (string, error)
+	BatchAddURL(context.Context, []*models.URL) ([]*models.URL, error)
+	GetURL(context.Context, string) (*models.URL, error)
 }

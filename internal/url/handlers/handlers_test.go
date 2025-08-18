@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"path"
 	"testing"
 
 	"github.com/MatiXxD/url-shortener/internal/models"
@@ -137,7 +139,7 @@ func TestUrlHandler_ShortenURL(t *testing.T) {
 	ts := httptest.NewServer(mux)
 
 	type jsonResp struct {
-		URL string `json:"url"`
+		URL string `json:"short_url"`
 	}
 
 	type want struct {
@@ -198,8 +200,8 @@ func TestUrlHandler_ShortenURL(t *testing.T) {
 				err := json.Unmarshal([]byte(respBody), jsonBody)
 				require.NoError(t, err)
 				require.True(t, len(jsonBody.URL) > 0)
-				_, ok := r.GetURL(jsonBody.URL)
-				require.True(t, ok)
+				_, err = r.GetURL(context.Background(), path.Base(jsonBody.URL))
+				require.NoError(t, err)
 			}
 		})
 	}

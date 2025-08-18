@@ -69,7 +69,7 @@ func createTestRequest(t *testing.T, ts *httptest.Server,
 }
 
 func runTestServer(r url.Repository) (chi.Router, error) {
-	u := usecase.NewUrlUsecase(r, l)
+	u := usecase.NewUrlUsecase(r, cfg, l)
 	h := NewUrlHandler(u, cfg, l)
 
 	mux := chi.NewRouter()

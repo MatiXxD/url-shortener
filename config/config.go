@@ -10,6 +10,7 @@ type ServiceConfig struct {
 	BaseURL     string
 	LoggerLevel string
 	FilePath    string
+	DSN         string
 }
 
 const (
@@ -17,6 +18,7 @@ const (
 	defaultBaseURL     = "http://localhost:8080"
 	defaultLoggerLevel = "info"
 	defaultFilePath    = "/tmp/short-url-db.json"
+	defaultDSN         = ""
 )
 
 func New() *ServiceConfig {
@@ -26,6 +28,7 @@ func New() *ServiceConfig {
 	flag.StringVar(&cfg.BaseURL, "b", defaultBaseURL, "BaseURL for short ulrs")
 	flag.StringVar(&cfg.LoggerLevel, "l", defaultLoggerLevel, "Loger level")
 	flag.StringVar(&cfg.FilePath, "f", defaultFilePath, "File path to store URL")
+	flag.StringVar(&cfg.DSN, "d", defaultDSN, "DSN for postgres database")
 
 	flag.Parse()
 
@@ -46,5 +49,8 @@ func parseEnv(cfg *ServiceConfig) {
 	}
 	if filePath := os.Getenv("FILE_STORAGE_PATH"); filePath != "" {
 		cfg.FilePath = filePath
+	}
+	if dsn := os.Getenv("DATABASE_DSN"); dsn != "" {
+		cfg.DSN = dsn
 	}
 }
